@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useRef, useEffect, useState } from 'react'
 import { Menu, Mail, CircleAlert, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';

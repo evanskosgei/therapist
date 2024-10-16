@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Globe, CheckCircle } from 'lucide-react';
 import { countryData } from '../utils/data';
+import EndPoints from '../Api/End_points';
 
 const SignUp = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,10 @@ const SignUp = () => {
         setConfirmPassword(e.target.value);
         setPasswordsMatch(e.target.value === password);
     };
+
+    const onSubmit = async (values) => {
+        console.log(values);
+    }
 
     return (
         <div className="font-sans bg-gray-100 min-h-screen flex items-center justify-center p-4">
@@ -91,11 +96,11 @@ const SignUp = () => {
                                     id="country"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 appearance-none"
                                 >
-                                    {countryData.map((data, index) =>(
-                                    // <option value="">Select your country</option>
-                                    <option key={index} defaultValue={data.name}>{data.name}</option>
-                                    // <option value="uganda">Uganda</option>
-                                ))}
+                                    {countryData.map((data, index) => (
+                                        // <option value="">Select your country</option>
+                                        <option key={index} defaultValue={data.name}>{data.name}</option>
+                                        // <option value="uganda">Uganda</option>
+                                    ))}
                                 </select>
                                 <Globe className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                             </div>
