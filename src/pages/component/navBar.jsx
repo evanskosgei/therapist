@@ -27,7 +27,7 @@ const NavBar = () => {
                 <Link to="/home" className="mr-4 py-1.5 text-xl font-semibold text-gray-800 hover:text-[#72BF78] transition-colors duration-300">
                     Anony Aid
                 </Link>
-                <div className="flex items-center">
+                <div className="relative items-center">
                     <ul className="flex items-center gap-2 lg:gap-4">
                         <li>
                             <Link to="/messages" className="flex items-center p-2 text-gray-600 hover:text-[#72BF78] hover:bg-green-100 rounded-full transition-all duration-300">

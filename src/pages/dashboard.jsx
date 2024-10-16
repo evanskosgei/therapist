@@ -23,7 +23,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="bg-gray-100 p-4 sm:p-6 md:p-8">
+        <div className="bg-gray-100 min-h-screen p-4 sm:p-6 md:p-8">
             <main className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-8">
                     <div className="flex flex-col sm:flex-row items-center mb-6 sm:mb-8">
@@ -70,7 +70,7 @@ const Dashboard = () => {
                                 {homeData.map((home, index) => (
                                     <article key={index} className="border items-center justify-center m-auto cursor-pointer overflow-hidden pb-2 shadow-lg transition-transform duration-200 hover:bg-gray-100">
                                         <Link to={home.link} className="block h-full w-full py-2">
-                                            <home.icon className="size-8 sm:size-10 text-[#72BF78] w-full object-cover" alt="featured image" />
+                                            <home.icon className="size-8 sm:size-10 text-[#72BF78] w-full object-cover"/>
                                             <div className="w-full text-center p-3 sm:p-4">
                                                 <p className="mb-2 text-lg sm:text-xl font-medium text-gray-800">{home.id}</p>
                                                 <p className="text-sm sm:text-md font-light text-gray-400">{home.label}</p>
