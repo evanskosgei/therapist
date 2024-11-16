@@ -1,28 +1,50 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Globe, CheckCircle } from 'lucide-react';
 import { countryData } from '../utils/data';
+import { useForm } from "react-hook-form"
 import EndPoints from '../Api/End_points';
+import { Success, Error } from '../components/toasts'
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+    const { register, handleSubmit, watch, formState: { errors }, setError } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [ip, setIp] = useState([]);
+    const password = watch("password", "");
+    const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-        setPasswordsMatch(e.target.value === confirmPassword);
-    };
-
-    const handleConfirmPasswordChange = (e) => {
-        setConfirmPassword(e.target.value);
-        setPasswordsMatch(e.target.value === password);
-    };
+    const getIp = async () => {
+        const response = await fetch("https://ipapi.co/json/")
+        const data = await response.json()
+        setIp(data.ip)
+    }
+    useEffect(() => {
+        getIp();
+    }, [])
 
     const onSubmit = async (values) => {
-        console.log(values);
+        try {
+            setIsSubmitting(true);
+            const { data } = await EndPoints.Auth.signup({
+                email: values.email,
+                contacts: values.contacts,
+                country: values.country,
+                password: values.password,
+                ip_address: ip
+            })
+            if (data.status == 200) {
+                localStorage.setItem('email', values.email);
+                Success(data.message);
+                navigate('/verify-email');
+            }
+        } catch (error) {
+            Error(error.response?.data?.error || error.response?.data?.message || "An error occurred during signup!")
+        }finally{
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -41,22 +63,7 @@ const SignUp = () => {
                 <div className="w-full lg:w-3/5 p-12">
                     <h3 className="text-3xl font-bold text-gray-800 mb-6">Create an Account</h3>
 
-                    <form className="space-y-6">
-                        {/* <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="name">
-                Name
-              </label>
-              <div className="relative">
-                <input
-                  id="name"
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10"
-                  placeholder="Enter your name"
-                />
-                <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              </div>
-            </div> */}
-
+                    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                         <div>
                             <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">
                                 Email Address
@@ -65,26 +72,57 @@ const SignUp = () => {
                                 <input
                                     id="email"
                                     type="email"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 
+                                        ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Enter your email"
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: {
+                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                            message: "Invalid email address"
+                                        }
+                                    })}
                                 />
                                 <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                             </div>
+                            {errors.email && (
+                                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                            )}
                         </div>
 
-                        <div>
-                            <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="contact">
+                        <div className="mb-6">
+                            <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="contacts">
                                 Contact
                             </label>
                             <div className="relative">
                                 <input
-                                    id="contact"
+                                    id="contacts"
                                     type="tel"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10"
+                                    maxLength={10}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 
+                                    ${errors.contacts ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Enter your contact number"
+                                    {...register("contacts", {
+                                        required: "Contact number is required",
+                                        pattern: {
+                                            value: /^[0-9]{10}$/,
+                                            message: "Must be exactly 10 digits"
+                                        },
+                                        validate: {
+                                            isInteger: value => Number.isInteger(Number(value)) || "Must be a valid number"
+                                        }
+                                    })}
+                                    onKeyPress={(e) => {
+                                        if (!/[0-9]/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                 />
                                 <Phone className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                             </div>
+                            {errors.contacts && (
+                                <p className="text-red-500 text-xs mt-1">{errors.contacts.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -94,16 +132,22 @@ const SignUp = () => {
                             <div className="relative">
                                 <select
                                     id="country"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 appearance-none"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 appearance-none
+                                        ${errors.country ? 'border-red-500' : 'border-gray-300'}`}
+                                    {...register("country", {
+                                        required: "Please select your country"
+                                    })}
                                 >
+                                    <option value="">Select your country</option>
                                     {countryData.map((data, index) => (
-                                        // <option value="">Select your country</option>
-                                        <option key={index} defaultValue={data.name}>{data.name}</option>
-                                        // <option value="uganda">Uganda</option>
+                                        <option key={index} value={data.name}>{data.name}</option>
                                     ))}
                                 </select>
                                 <Globe className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                             </div>
+                            {errors.country && (
+                                <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -114,10 +158,20 @@ const SignUp = () => {
                                 <input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 pr-10"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 pr-10
+                                        ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Enter your password"
-                                    value={password}
-                                    onChange={handlePasswordChange}
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 8,
+                                            message: "Password must be at least 8 characters long"
+                                        },
+                                        pattern: {
+                                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                                            message: "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"
+                                        }
+                                    })}
                                 />
                                 <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 <button
@@ -132,6 +186,9 @@ const SignUp = () => {
                                     )}
                                 </button>
                             </div>
+                            {errors.password && (
+                                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -142,11 +199,14 @@ const SignUp = () => {
                                 <input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 pr-10 ${passwordsMatch ? 'border-gray-300' : 'border-red-500'
-                                        }`}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-[#72BF78] focus:border-[#72BF78] pl-10 pr-10
+                                        ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Confirm your password"
-                                    value={confirmPassword}
-                                    onChange={handleConfirmPasswordChange}
+                                    {...register("confirmPassword", {
+                                        required: "Please confirm your password",
+                                        validate: value =>
+                                            value === password || "Passwords do not match"
+                                    })}
                                 />
                                 <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 <button
@@ -161,27 +221,32 @@ const SignUp = () => {
                                     )}
                                 </button>
                             </div>
-                            {!passwordsMatch && (
-                                <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
+                            {errors.confirmPassword && (
+                                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
                             )}
                         </div>
+
 
                         <div className="flex items-center">
                             <input
                                 id="terms"
                                 type="checkbox"
-                                className="h-4 w-4 text-[#72BF78] focus:ring-[#72BF78] border-gray-300 rounded"
+                                className={`h-4 w-4 text-[#72BF78] focus:ring-[#72BF78] border-gray-300 rounded
+                                    ${errors.terms ? 'border-red-500' : ''}`}
+                                {...register("terms", {
+                                    required: "You must accept the terms and conditions"
+                                })}
                             />
                             <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
                                 I accept the <a href="#" className="text-[#72BF78] hover:underline">Terms and Conditions</a>
                             </label>
                         </div>
+                        {errors.terms && (
+                            <p className="text-red-500 text-xs mt-1">{errors.terms.message}</p>
+                        )}
 
-                        <button
-                            type="submit"
-                            className="w-full bg-[#72BF78] text-white py-2 px-4 rounded-lg hover:bg-[#5da963] transition duration-300"
-                        >
-                            Create an account
+                        <button type="submit" className="w-full bg-[#72BF78] text-white py-2 px-4 rounded-lg hover:bg-[#5da963] transition duration-300" disabled={isSubmitting}>
+                        {isSubmitting ? 'Creating...' : 'Create an account'}   
                         </button>
                     </form>
 

@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, CheckCircle, ArrowRight } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import EndPoints from '../Api/End_points';
+import { Success, Error } from '../components/toasts';
 
 const ResetPassword = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -9,6 +12,9 @@ const ResetPassword = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const {token} = useParams()
 
     const handlePasswordChange = (e) => {
         setPassword(e.target.value);
@@ -20,10 +26,25 @@ const ResetPassword = () => {
         setPasswordsMatch(e.target.value === password);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         if (password === confirmPassword && password.length > 0) {
             setIsSubmitted(true);
+        }
+        try{
+            setIsSubmitting(true);
+            const {data} = await EndPoints.Auth.resetpassword({
+                confirm:token,
+                newpassword:password
+            })
+            if(data.status == 200){
+                Success(data.message)
+                setIsSubmitted(true);
+            }
+        }catch(errors){
+            Error(errors.response.data.error || errors.response.data.message || "An Error Occurred!")
+        }finally{
+            setIsSubmitting(false);
         }
     };
 
@@ -110,9 +131,8 @@ const ResetPassword = () => {
                             <button
                                 type="submit"
                                 className="w-full bg-[#72BF78] text-white py-3 px-4 rounded-lg hover:bg-[#5da963] transition duration-300 flex items-center justify-center"
-                                disabled={!passwordsMatch}
-                            >
-                                Reset Password
+                                disabled={!passwordsMatch}>
+                                {isSubmitting ? 'Sending...' : 'Reset Password'}
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </button>
                         </form>

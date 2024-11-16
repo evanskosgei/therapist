@@ -1,15 +1,28 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import { Success, Error } from '../components/toasts';
+import EndPoints from '../Api/End_points';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        // Here you would typically handle the password reset request
         setIsSubmitted(true);
+        try {
+            const { data } = await EndPoints.Auth.forgotpassword({email})
+            if (data.status == 200) {
+                setIsSubmitted(true);
+                Success(data.message)
+            }
+        } catch (errors) {
+            Error(errors.response.data.error || errors.response.data.message || "An Error Occurred!")
+        }finally{
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -51,8 +64,8 @@ const ForgotPassword = () => {
                             <button
                                 type="submit"
                                 className="w-full bg-[#72BF78] text-white py-3 px-4 rounded-lg hover:bg-[#5da963] transition duration-300 flex items-center justify-center"
-                            >
-                                Send Reset Instructions
+                                disabled={isSubmitting}>
+                                 {isSubmitting ? 'Sending...' : 'Send Reset Instructions'}
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </button>
                         </form>
@@ -73,7 +86,7 @@ const ForgotPassword = () => {
                     )}
 
                     <div className="mt-8 text-center">
-                        <a href="/signin" className="text-[#72BF78] hover:underline text-sm">
+                        <a href="/" className="text-[#72BF78] hover:underline text-sm">
                             Remember your password? Sign in
                         </a>
                     </div>

@@ -5,6 +5,7 @@ import SignIn from './AuthForms/signin';
 import SignUp from './AuthForms/signup';
 import Forgot_password from './AuthForms/forgot_password';
 import ResetPassword from './AuthForms/reset_password';
+import Verify_email from './AuthForms/verify_email';
 
 import Layout from './pages/layout';
 import Dashboard from './pages/dashboard';
@@ -20,7 +21,8 @@ const Routing = () => {
         <Route path="/" element={<SignIn/>} />
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/forgot-password" element={<Forgot_password/>} />
-        <Route path="/reset-password" element={<ResetPassword/>} />
+        <Route path="/reset-password/:token" element={<ResetPassword/>} />
+        <Route path='/verify-email' element={<Verify_email/>} />
 
         <Route path='/home' element={<Layout/>}>
           <Route index element={<Dashboard/>} />
