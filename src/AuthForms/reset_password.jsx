@@ -33,7 +33,7 @@ const ResetPassword = () => {
         }
         try{
             setIsSubmitting(true);
-            const {data} = await EndPoints.Auth.resetpassword({
+            const {data} = await EndPoints.Auth.resetPassword({
                 confirm:token,
                 newpassword:password
             })
@@ -144,7 +144,7 @@ const ResetPassword = () => {
                                 Your password has been successfully reset. You can now use your new password to sign in.
                             </p>
                             <a
-                                href="/signin"
+                                href="/"
                                 className="inline-block bg-[#72BF78] text-white py-2 px-4 rounded-lg hover:bg-[#5da963] transition duration-300"
                             >
                                 Go to Sign In

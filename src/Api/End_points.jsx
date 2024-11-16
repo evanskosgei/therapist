@@ -7,6 +7,7 @@ const EndPoints = {
         verify_email:(data) => Post('/verify-email', data),
         otpresend:(data)=>Post('/resend-activation', data),
         forgotpassword:(data)=>Post('/forgot-password', data),
+        resetPassword:(data)=>Post('/reset-password', data),
     },
 }
 export default EndPoints;
