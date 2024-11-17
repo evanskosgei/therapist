@@ -37,6 +37,6 @@ export const dropDownMenuData = () => [
         id: 'logout',
         label: 'Log Out',
         icon: LogOut,
-        link: '/logout'
+        link: null
     }
 ]

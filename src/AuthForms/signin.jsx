@@ -5,11 +5,15 @@ import { useForm } from 'react-hook-form';
 import { Success, Error } from '../components/toasts';
 import EndPoints from '../Api/End_points';
 import { useNavigate } from 'react-router-dom';
+import { setUserDetails, saveToken } from '../utils/helpers';
+import { setUser, setToken } from '../redux/authReducer';
+import { useDispatch, useSelector } from 'react-redux';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   const {register,handleSubmit, formState: { errors },} = useForm({defaultValues: {
       email: '',
@@ -22,25 +26,17 @@ const SignIn = () => {
     setIsLoading(true);
     try {
       const { data } = await EndPoints.Auth.login(values);
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        if (values.remember) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        } else {
-          sessionStorage.setItem('user', JSON.stringify(data.user));
-        }
-      }
-
-      Success('Login successful!');
-      navigate('/home');
-      
+      if(data.status == 200){
+        saveToken(data.token);
+        dispatch(setUser(data.therapist)); // Save user data
+        dispatch(setToken(data.token)); // Save token        
+        Success(data.message)
+        navigate('/home');
+      }     
     } catch (error) {
       Error(error.response?.data?.error || error.message || "An Error Occurred!");
-      
-      // Handle specific error cases
       if (error.response?.status === 402) {
-        // Email verification required
-        navigate(`/verify-email?email=${values.email}`);
+        navigate(`/verify-email`);
       }
     } finally {
       setIsLoading(false);
