@@ -1,38 +1,55 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Success, Error } from '../components/toasts';
 import EndPoints from '../Api/End_points';
 import { useNavigate } from 'react-router-dom';
-import { setUserDetails, saveToken } from '../utils/helpers';
-import { setUser, setToken } from '../redux/authReducer';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { setUser, setToken, setLoading, setError } from '../Redux/authSlice';
+import { saveToken } from '../utils/helpers';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  const {register,handleSubmit, formState: { errors },} = useForm({defaultValues: {
-      email: '',
-      password: '',
-      remember: false
-    }
+  const [ip, setIp] = useState([]);
+
+  const { register, handleSubmit, formState: { errors }, } = useForm({
+    defaultValues: { email: '', password: '', remember: false }
   });
+
+  const getIp = async () => {
+    try {
+      const response = await fetch("https://ipapi.co/json/");
+      const data = await response.json();
+      setIp(data.ip);
+    } catch (error) {
+      setIp(null);
+    }
+  };
+
+  useEffect(() => {
+    getIp()
+    if (ip === null) {
+      navigate('/disable-vpn');
+    }
+  }, [ip, navigate]);
 
   const onSubmit = async (values) => {
     setIsLoading(true);
+    dispatch(setLoading(true));
     try {
       const { data } = await EndPoints.Auth.login(values);
-      if(data.status == 200){
+      if (data.status == 200) {
+        dispatch(setToken(data.token));
+        console.log(data.token)
         saveToken(data.token);
-        dispatch(setUser(data.therapist)); // Save user data
-        dispatch(setToken(data.token)); // Save token        
-        Success(data.message)
+        dispatch(setUser(data.therapist));
         navigate('/home');
-      }     
+        Success(data.message)
+      }
     } catch (error) {
       Error(error.response?.data?.error || error.message || "An Error Occurred!");
       if (error.response?.status === 402) {
@@ -40,6 +57,7 @@ const SignIn = () => {
       }
     } finally {
       setIsLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -50,10 +68,8 @@ const SignIn = () => {
           <h2 className="text-4xl font-bold text-white mb-6">Welcome Back!</h2>
           <p className="text-white text-lg">Sign in to access your account and continue your journey with us.</p>
         </div>
-
         <div className="w-full lg:w-3/5 p-12">
           <h3 className="text-3xl font-bold text-gray-800 mb-6">Sign In</h3>
-
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">
@@ -81,7 +97,6 @@ const SignIn = () => {
                 <p className="mt-1 text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
-
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="password">
                 Password
@@ -120,7 +135,6 @@ const SignIn = () => {
                 <p className="mt-1 text-red-500 text-sm">{errors.password.message}</p>
               )}
             </div>
-
             <div className="flex items-center justify-between mb-6">
               <label className="flex items-center">
                 <input
@@ -135,7 +149,6 @@ const SignIn = () => {
                 Forgot password?
               </a>
             </div>
-
             <button
               type="submit"
               className="w-full bg-[#72BF78] text-white py-2 px-4 rounded-lg hover:bg-[#5da963] transition duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
@@ -151,7 +164,6 @@ const SignIn = () => {
               )}
             </button>
           </form>
-
           <p className="mt-8 text-sm text-gray-600 text-center">
             Don&apos;t have an account?{' '}
             <a href="/signup" className="text-[#72BF78] hover:underline">
@@ -163,5 +175,4 @@ const SignIn = () => {
     </div>
   );
 };
-
 export default SignIn;

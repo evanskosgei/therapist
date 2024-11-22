@@ -1,4 +1,6 @@
+
 import Post from "./urls/post";
+import get from "./urls/get";
 
 const EndPoints = {
     Auth:{
@@ -9,5 +11,8 @@ const EndPoints = {
         forgotpassword:(data)=>Post('/forgot-password', data),
         resetPassword:(data)=>Post('/reset-password', data),
     },
+    profile:{
+        prof:()=>get('/profile')
+    }
 }
 export default EndPoints;

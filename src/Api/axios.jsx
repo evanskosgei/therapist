@@ -16,15 +16,24 @@ instance.interceptors.request.use((config) => {
 });
 
 instance.interceptors.response.use(
-  response => {
+  (response) => {
+    // Successful responses remain unaltered.
     return response;
   },
-  error => {
-    console.log(error)
-    const status = error.response.data.message ? error.response.data.message : null;
-    if (status === "Unauthenticated.") {
-      window.location.href = '/signin'
+  (error) => {
+    // Handle errors globally.
+    if (error.response) {
+      const status = error.response.status;
+      if (status === 401 || error.response.data.message === "Unauthenticated.") {
+        window.location.href = '/login'; // Redirect to login page.
+      } else {
+        // Optionally, log errors or show notifications.
+        console.error('API Error:', error.response.data);
+      }
     }
     return Promise.reject(error);
-  });
+  }
+);
+
+
 export default instance;

@@ -16,11 +16,29 @@ import EarningLayout from './pages/earnings/earning_layout';
 import How_it_works from './pages/how-it-works/how_it_works';
 import Out_source_article from './pages/article/out_source_article';
 
-import { useAuth } from './providers/AuthProvider';
-import { ProtectedRoute } from './utils/protectedRoutes';
+// error pages
+import VPNErrorPage from './ErrorPages/vpnErrorPage';
+
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser, setLoading, setError } from './Redux/authSlice';
+
+
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
+  if (loading) {
+      return <div>Loading...</div>
+  }
+
+  if (!user) {
+      return <Navigate to="/" replace />
+  }
+  return children;
+};
 
 const Routing = () => {
-  const { user } = useAuth();
+
   return (
     <Routes>
       <Route path="/" element={<SignIn />} />
@@ -28,9 +46,14 @@ const Routing = () => {
       <Route path="/forgot-password" element={<Forgot_password />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path='/verify-email' element={<Verify_email />} />
-
-
-      <Route path='/home' element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+      <Route path='/disable-vpn' element={<VPNErrorPage/>}/>
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
         <Route index element={<Dashboard />} />
         <Route path='profile' element={<Profile />} />
         <Route path='settings' element={<SettingsLayout />} />
@@ -38,6 +61,7 @@ const Routing = () => {
         <Route path='how-it-works' element={<How_it_works />} />
         <Route path='sell-articles' element={<Out_source_article />} />
       </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>
   )

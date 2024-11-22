@@ -1,9 +1,21 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star, User, MapPin, Mail, Phone, Book, Clock, ThumbsUp, Award, CheckCircle } from 'lucide-react';
+import EndPoints from '../../Api/End_points';
 
 const Profile = () => {
+    const [therapist, setTherapist] = useState([]);
+    const fetch_profile =async()=>{
+        const {data} = await EndPoints.profile.prof()
+        if(data.status == 200){
+            setTherapist(data.therapist)
+        }
+        console.log(data);
+    }
+    useEffect(()=>{
+        fetch_profile();
+    }, [])
     const tutor = {
         name: "staroneso123",
         subjects: ["Cognitive Therapy", "Marriage Therapy", "Mindfulness Therapy"],

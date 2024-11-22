@@ -1,22 +1,20 @@
 /* eslint-disable no-unused-vars */
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { dropDownMenuData } from './dropDownMenuData'
-import { logout } from '../../redux/authReducer'
-import { setUser } from '../../redux/authReducer'
+import { persistor } from '../../Redux/store'
+import { useDispatch } from 'react-redux'
 
 const DropDownMenu = () => {
     const menuItems = dropDownMenuData()
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
-    const handleLogout = () => {
-        dispatch(logout())
-        dispatch(setUser(null));
-        localStorage.removeItem('user')
-        sessionStorage.removeItem('token')
-        navigate('/')
+    const handleLogout = async () => {
+        await persistor.purge();
+        localStorage.clear();
+        navigate('/');
+
     }
 
     return (
